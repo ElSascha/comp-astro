@@ -1,0 +1,35 @@
+Single precision:
+Harmonic forward sum for k = 1000: 1.64393484592438
+Time needed: 5 microseconds
+Harmonic backwards sum for k = 1000: 1.64393448829651
+Time needed: 1 microseconds
+Harmonic forward sum for k = 1000000: 1.64472532272339
+Time needed: 3615 microseconds
+Harmonic backwards sum for k = 1000000: 1.64493298530579
+Time needed: 1078 microseconds
+Harmonic forward sum for k = 10000000: 1.64472532272339
+Time needed: 18851 microseconds
+Harmonic backwards sum for k = 10000000: 1.6449339389801
+Time needed: 10957 microseconds
+Harmonic forward sum for k = 100000000: 1.64472532272339
+Time needed: 118272 microseconds
+Harmonic backwards sum for k = 100000000: 1.64493405818939
+Time needed: 109292 microseconds
+
+Double precision:
+Harmonic forward sum for k = 1000: 1.64393456668156
+Time needed: 1 microseconds
+Harmonic backwards sum for k = 1000: 1.64393456668156
+Time needed: 1 microseconds
+Harmonic forward sum for k = 1000000: 1.64493306684877
+Time needed: 1401 microseconds
+Harmonic backwards sum for k = 1000000: 1.64493306684873
+Time needed: 1262 microseconds
+Harmonic forward sum for k = 10000000: 1.64493396684726
+Time needed: 14596 microseconds
+Harmonic backwards sum for k = 10000000: 1.64493396684823
+Time needed: 13371 microseconds
+Harmonic forward sum for k = 100000000: 1.64493405783458
+Time needed: 137314 microseconds
+Harmonic backwards sum for k = 100000000: 1.64493405684823
+Time needed: 134633 microseconds
