@@ -47,7 +47,7 @@ int main(){
 
     std::ofstream pi_Kahan;
     pi_Kahan.open ("pi_Kahan_data.txt");
-    for (int i = 1; i <=500 ; i++){
+    for (int i = 1; i <=30 ; i++){
         long double A_n = find_pi_Kahan(i);
         pi_Kahan << i << ";" << std::setprecision(3000)<< A_n << std::endl;
     }
