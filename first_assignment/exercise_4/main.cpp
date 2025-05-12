@@ -49,7 +49,7 @@ int main(){
     pi_Kahan.open ("pi_Kahan_data.txt");
     for (int i = 1; i <=30 ; i++){
         long double A_n = find_pi_Kahan(i);
-        pi_Kahan << i << ";" << std::setprecision(3000)<< A_n << std::endl;
+        pi_Kahan << i << ";" << std::setprecision(30)<< A_n << std::endl;
     }
     pi_Kahan.close();
 }
