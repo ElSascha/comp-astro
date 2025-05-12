@@ -3,6 +3,13 @@
 #include <cmath>
 
 double* solve_quadratic(double* param){
+    //Linear case
+    if (param[0] == 0 && param[1] != 0){
+        double* res = new double[1];
+        res[0] = -param[2] / param[1];
+        return res;
+    }
+    
     if (param[1] * param[1] - 4 * param[0] * param[2] < param[1] * param[1]){
         double* res = new double[2];
         res[1] = (-param[1] - sqrt(param[1]*param[1] - 4*param[0]*param[2])) / (2*param[0]);
