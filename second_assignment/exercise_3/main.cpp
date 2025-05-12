@@ -16,8 +16,9 @@ double* solve_quadratic(double* param){
 
 
 int main(){
-    
+
     double param[] = {1, 1, 1e-6}; // Coefficients of the quadratic equation ax^2 + bx + c = 0
+
     double* result = solve_quadratic(param);
     std::cout << "x_1: " << result[0] << ", x_2: " << result[1] << std::endl;
     // Free the allocated memory
