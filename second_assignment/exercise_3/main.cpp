@@ -35,6 +35,7 @@ int main(){
         std::vector<double> solutions = quadratic_solution(a, b, pow(10, -exp));
         std::cout << "For exp = " << exp << ": " << solutions[0] << ", " << solutions[1] << std::endl;
     }
+    std::cout << "Machine epsilon for double: " << std::numeric_limits<double>::epsilon() << std::endl;
     // // Test the function with both solutions
     // std::vector<double> solutions = quadratic_solution(a, b, c);
 
