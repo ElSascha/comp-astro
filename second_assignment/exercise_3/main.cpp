@@ -3,6 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <vector>
+#include <cmath>
 
 
 
@@ -28,15 +29,18 @@ std::vector<double> quadratic_solution(double a, double b, double c){
 
 int main(){
     double a = 1.0;
-    double b = -3.0;
-    double c = 2.0;
+    double b = 1.0;
 
-    // Test the function with both solutions
-    std::vector<double> solutions = quadratic_solution(a, b, c);
+    for(int exp = 1; exp < 20; exp++){
+        std::vector<double> solutions = quadratic_solution(a, b, pow(10, -exp));
+        std::cout << "For exp = " << exp << ": " << solutions[0] << ", " << solutions[1] << std::endl;
+    }
+    // // Test the function with both solutions
+    // std::vector<double> solutions = quadratic_solution(a, b, c);
 
-    std::cout << "Quadratic equation: " << a << "x² + " << b << "x + " << c << " = 0" << std::endl;
-    std::cout << "Solution 1: " << solutions[0] << std::endl;
-    std::cout << "Solution 2: " << solutions[1] << std::endl;
+    // std::cout << "Quadratic equation: " << a << "x² + " << b << "x + " << c << " = 0" << std::endl;
+    // std::cout << "Solution 1: " << solutions[0] << std::endl;
+    // std::cout << "Solution 2: " << solutions[1] << std::endl;
 
     return 0;
 }
