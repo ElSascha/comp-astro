@@ -27,6 +27,10 @@ double* solve_quadratic(double* param){
     double a = param[0];
     double b = param[1];
     double c = param[2];
+    if(b*b - 4.0*a*c < 0){
+        std::cout << "No real roots" << std::endl;
+        return nullptr;
+    }
     double* res = new double[2];
     if(b*b - 4.0*a*c < b*b){
         res[1] = (-b - sqrt(b*b - 4.0*a*c)) / (2.0*a);
