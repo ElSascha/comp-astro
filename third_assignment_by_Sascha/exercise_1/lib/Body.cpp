@@ -44,12 +44,7 @@ Body::Body(const double &e, const double &a, const double &t_0)
     this->e = e;
     this->a = a;
     this->t_0 = t_0;
-    this->x = 0;
-    this->y = 0;
     this->P = calc_P();
-    this->M = 0;
-    this->f = 0;
-    this->r = 0;
     if (e < 0.8)
     {
         this->E = 0;
