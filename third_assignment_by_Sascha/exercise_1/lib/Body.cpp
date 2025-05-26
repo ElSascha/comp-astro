@@ -8,9 +8,12 @@ double Body::calc_P()
 
 void Body::update_M()
 {
-    this->M = 2 * M_PI * P * (this->t - this->t_0);
+    this->M = 2 * M_PI * (this->t - this->t_0) / P;
 }
-
+void Body::update_M(const double &M_0)
+{
+    this->M = (2 * M_PI * (this->t) / P) - M_0;
+}
 void Body::update_x()
 {
     this->x = this->r * cos(this->f);
@@ -27,24 +30,34 @@ void Body::update_r()
 {
     this->r = this->a * (1 - pow(this->e, 2)) / (1 + this->e * cos(this->f));
 }
-void Body::update_E(int max_ite, bool newton)
+void Body::update_E(bool newton)
 {
     if (newton)
     {
-        this->E = Method::newton_raphson(max_ite, this->M, this->e);
+        this->E = Method::newton_raphson(this->M, this->e);
     }
     else
     {
-        this->E = Method::fix_point(max_ite, this->M, this->e);
+        this->E = Method::fix_point(this->M, this->e);
     }
 }
 
-Body::Body(const double &e, const double &a, const double &t_0)
+Body::Body(const double &e, const double &a, const double &t_0, const int &data_points)
 {
     this->e = e;
     this->a = a;
     this->t_0 = t_0;
+    this-> data_points = data_points;
     this->P = calc_P();
+    this->dt = this->P / this->data_points;
+    this->t = this->t_0;
+    this->M = 0;
+    this->f = 0;
+    this->r = 0;
+    this->x = 0;
+    this->y = 0;
+    // Initialize E based on eccentricity
+    // If eccentricity is less than 0.8, we can start with M, otherwise we start with M_PI
     if (e < 0.8)
     {
         this->E = 0;
@@ -55,11 +68,49 @@ Body::Body(const double &e, const double &a, const double &t_0)
     }
 }
 
-void Body::update(int max_ite, bool newton)
+Body::Body(const double &e, const double &a)
+{
+    this->e = e;
+    this->a = a;
+    this->t_0 = 0;
+    this-> data_points = 0;
+    this->P = calc_P();
+    this->dt = 0.0;
+    this->t = 0.0;
+    this->M = 0.0;
+    this->f = 0.0;
+    this->r = 0.0;
+    this->x = 0.0;
+    this->y = 0.0;
+    // Initialize E based on eccentricity
+    // If eccentricity is less than 0.8, we can start with M, otherwise we start with M_PI
+    if (e < 0.8)
+    {
+        this->E = 0;
+    }
+    else
+    {
+        this->E = M_PI;
+    }
+}
+
+
+
+void Body::update(bool newton)
+{
+    this->t = this->t + this->dt;
+    update_M();
+    update_E(newton);
+    update_f();
+    update_r();
+    update_x();
+    update_y();
+}
+void Body::update(bool newton,const double &M_0)
 {
     this->t = this->t + 1;
-    update_M();
-    update_E(max_ite, newton);
+    update_M(M_0);
+    update_E(newton);
     update_f();
     update_r();
     update_x();
@@ -67,14 +118,17 @@ void Body::update(int max_ite, bool newton)
 }
 double Body::get_x()
 {
+
     return this->x;
 }
 double Body::get_y()
 {
+    
     return this->y;
 }
 double Body::get_r()
 {
+    
     return this->r;
 }
 double Body::get_f()
@@ -83,10 +137,12 @@ double Body::get_f()
 }
 double Body::get_E()
 {
+   
     return this->E;
 }
 double Body::get_M()
 {
+    std::cout << "M: " << this->M << std::endl;
     return this->M;
 }
 double Body::get_P()
@@ -96,6 +152,10 @@ double Body::get_P()
 double Body::get_t()
 {
     return this->t;
+}
+int Body::get_data_points()
+{
+    return this->data_points;
 }
 
 // The Body class represents a celestial body in an elliptical orbit.

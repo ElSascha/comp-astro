@@ -9,8 +9,10 @@
 
 class Body {
 public:
-    Body(const double& e, const double&a, const double& t_0);
-    void update(int max_ite, bool newton);
+    Body(const double& e, const double&a, const double& t_0, const int& data_points);
+    Body(const double& e, const double&a);
+    void update(bool newton);
+    void update(bool newton, const double& M_0);
     double get_x();
     double get_y();
     double get_r();
@@ -19,18 +21,22 @@ public:
     double get_M();
     double get_P();
     double get_t();
+    int get_data_points();
 
 
 
 private:
-    double x,y,e,a,M,P,t,t_0,f,r,E;
+    double x,y,e,a,M,P,t,t_0,f,r,E,dt;
+    int data_points;
     double calc_P();
     void update_M();
+    void update_M(const double& M_0);
     void update_x();
     void update_y();
     void update_f();
     void update_r();
-    void update_E(int max_ite, bool newton);
+    void update_E(bool newton);
+
     
 };
 
