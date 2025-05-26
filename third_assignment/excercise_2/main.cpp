@@ -62,7 +62,7 @@ int main() {
     if (r==0.0){
         std::cout << "No solution found after " << iterations << " iterations." << std::endl;
     } else {
-        std::cout << "Found solution at r = " << r/1.000 << " km after " << iterations << " iterations." << std::endl;
+        std::cout << "Found solution at r = " << r/1000 << " km after " << iterations << " iterations." << std::endl;
     }
 
     return 0;
