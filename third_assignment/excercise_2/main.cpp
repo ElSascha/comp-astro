@@ -43,7 +43,7 @@ std::pair<double, int> root_finder(){
         r = gsl_root_fsolver_root(s);
         r_lower = gsl_root_fsolver_x_lower(s);
         r_upper = gsl_root_fsolver_x_upper(s);
-        status = gsl_root_test_interval(r_lower, r_upper, 0, 0.001);
+        status = gsl_root_test_interval(r_lower, r_upper, 0, 0.00001);
     } while (status == GSL_CONTINUE && iter < max_iter);
 
     gsl_root_fsolver_free(s);
