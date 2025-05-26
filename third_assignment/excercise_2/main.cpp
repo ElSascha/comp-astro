@@ -4,6 +4,8 @@
 #include <gsl/gsl_errno.h>
 #include <tuple>
 
+// code laufen lassen mit: g++ -std=c++11 -Wall -O2 -o main build/main.o -lgsl -lgslcblas -lm
+
 double M = 5.974e24; // mass of the Earth in kg
 double m = 7.348e22; // mass of the Moon
 double omega = 2.662e-6; // orbital frequency of moon and satellite
