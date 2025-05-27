@@ -1,7 +1,9 @@
 # Compiler
 CXX = g++
 # Compiler flags
-CXXFLAGS = -std=c++11 -Wall -O2
+
+CXXFLAGS = -std=c++11 -Wall -O2 $(GSL_CXXFLAGS)
+LDFLAGS = $(GSL_LDFLAGS) -lgsl -lgslcblas -lm
 # Source files: main.cpp and all .cpp files in lib
 SRC = main.cpp $(wildcard lib/*.cpp)
 # Build directory
@@ -14,7 +16,7 @@ EXEC = main
 all: $(EXEC)
 # Link object files to create the executable
 $(EXEC): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 # Compile source files into object files
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
