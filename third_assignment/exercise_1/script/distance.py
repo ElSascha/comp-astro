@@ -25,7 +25,7 @@ distance_df["Date"] = pd.to_datetime(distance_df["Date"], format="%d.%m.%Y", err
 distance_df = distance_df.dropna(subset=["Date"])
 
 plt.figure(figsize=(10, 5))
-plt.scatter(distance_df["Date"], distance_df["Distance"], label="Distance", color="blue", marker="x",linewidths=0.8)
+plt.plot(distance_df["Date"], distance_df["Distance"], label="Distance", color="blue",linewidth=1)
 plt.xlabel("Date")
 plt.ylabel("Distance (AU)")
 plt.title("Distance between Earth and Mars Over Time")

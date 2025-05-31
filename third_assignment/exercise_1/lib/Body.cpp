@@ -12,7 +12,7 @@ void Body::update_M()
 }
 void Body::update_M(const double &M_0)
 {
-    this->M = (2 * M_PI * (this->t) / P) - M_0;
+    this->M = (2 * M_PI * (this->t) / P) + M_0;
 }
 void Body::update_x()
 {
