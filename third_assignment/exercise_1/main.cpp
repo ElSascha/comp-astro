@@ -78,6 +78,6 @@ int main(){
     // print_data_in_file(mercury,mercury.get_data_points(), "mercury_newton_raphson.txt", true);
     // std::cout << "Halley's Comet Newton-Raphson:" << std::endl;
     // print_data_in_file(halleys_comet,halleys_comet.get_data_points(), "halleys_comet_newton_raphson.txt", true);
-    // print_distance_in_file(earth, mars, "distance_earth_mars.txt");
+    print_distance_in_file(earth, mars, "distance_earth_mars.txt");
     return 0;
 }

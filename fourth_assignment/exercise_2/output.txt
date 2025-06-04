@@ -1,0 +1,6 @@
+Si(1) using Trapezoidal Rule: 0.946083070367158
+Si(1) using Simpson's Rule: 0.946083070367189
+Si(1) using Adaptive Simpson's Rule: 0.946083070366936
+C(5) using Trapezoidal Rule: 0.563631188695895
+C(5) using Simpson's Rule: 0.563631188704029
+C(5) using Adaptive Simpson's Rule: 0.563631188708677
