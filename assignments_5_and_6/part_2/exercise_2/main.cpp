@@ -12,7 +12,7 @@ const double mu1 = 1 - mu2; // given normalization mu1 + mu2 = 1
 
 const double Omega = 1.0; // angular velocity in dimensionless units is equal to 1
 const double dt = 1e-3; // time step 
-const int Nsteps = 5e5; // number of steps
+const int Nsteps = 5e6; // number of steps
 
 
 // this outputs its results into r1 and r2, which need to be passed as parameters
@@ -77,12 +77,12 @@ int main(){
 
     for (double x0 : x0s) {
         vector<double> state = {x0, 0.0, 0.0, compute_initial_vy(x0, CJ)}; // initial state vector [x, y, vx, vy]
-        std::ofstream out("orbit_x0_" + std::to_string(x0) + ".dat");
+        std::ofstream out("orbit_x0_" + std::to_string(x0) + ".csv");
 
         for (int step = 0; step < Nsteps; ++step) {
             if (step % 500 == 0) { // output every n steps
                 cout << "Calc for x0 = " << x0 << ", step = " << step << endl;
-                out << state[0] << " " << state[1] << endl; // output current position
+                out << state[0] << "," << state[1] << endl; // output current position
             }
             rk4_step(state); // perform RK4 step
         }
