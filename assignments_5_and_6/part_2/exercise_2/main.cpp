@@ -6,6 +6,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 using std::sqrt;
+using std::fabs;
 
 const double mu2 = 1e-3;
 const double mu1 = 1 - mu2; // given normalization mu1 + mu2 = 1
@@ -78,15 +79,23 @@ int main(){
     for (double x0 : x0s) {
         vector<double> state = {x0, 0.0, 0.0, compute_initial_vy(x0, CJ)}; // initial state vector [x, y, vx, vy]
         std::ofstream out("orbit_x0_" + std::to_string(x0) + ".csv");
+        std::ofstream poincare("poincare_x0_" + std::to_string(x0) + ".csv");
 
         for (int step = 0; step < Nsteps; ++step) {
             if (step % 500 == 0) { // output every n steps
                 cout << "Calc for x0 = " << x0 << ", step = " << step << endl;
                 out << state[0] << "," << state[1] << endl; // output current position
             }
+
+            // Create Poincare section if y ~= 0, vy > 0
+            if (fabs(state[1]) < 1e-5 && state[3] > 0) {
+                poincare << state[0] << "," << state[2] << endl; // output x, vx to Poincare file
+            }
+
             rk4_step(state); // perform RK4 step
         }
         out.close();
+        poincare.close();
         cout << "Orbit for x0 = " << x0 << " computed and saved to orbit_x0_" << x0 << ".dat" << endl;
     }
     return 0;
