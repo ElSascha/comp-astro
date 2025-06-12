@@ -23,3 +23,6 @@ $(BUILD_DIR)/%.o: %.cpp
 clean:
 	rm -rf $(BUILD_DIR) $(EXEC)
 .PHONY: all clean
+# When "make run" is called, compile and run the program
+run: all
+	./$(EXEC)
