@@ -88,7 +88,7 @@ int main(){
             }
 
             // Create Poincare section if y ~= 0, vy > 0
-            if (fabs(state[1]) < 1e-5 && state[3] > 0) {
+            if (fabs(state[1]) < 1e-4 && state[3] > 0.0) {
                 poincare << state[0] << "," << state[2] << endl; // output x, vx to Poincare file
             }
 
