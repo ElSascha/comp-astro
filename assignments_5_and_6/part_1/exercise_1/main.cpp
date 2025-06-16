@@ -52,7 +52,7 @@ int main(){
         }
 
         file.close();
-        std::cout << "Für n = " << n << " ist der Radius r = " << xi << std::endl;
+        std::cout << "Für n = " << n << " ist der Radius r = " << xi << std::endl; // stimmt für n=5 natürlich nicht
 
     }
 

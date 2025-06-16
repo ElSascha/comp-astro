@@ -33,7 +33,7 @@ void heun_step(double xi, double& w, double& z, double delta_xi, double n){
 int main(){
     std::vector<double> n_values = {0.5, 1.5, 2.5};
 
-    double delta_xi = 0.001;
+    double delta_xi = 0.0001;
 
     for (double n : n_values){
         // Anfangsbedingungen
