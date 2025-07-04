@@ -73,7 +73,7 @@ void rk4_step(vector<double>& state){
 
 int main(){
     double CJ = 3.03; // Jacobi constant value
-    vector<double> x0s = {0.21, 0.24, 0.26, 0.27, 0.4, 0.5, 0.6, 0.8};
+    vector<double> x0s = {0.19, 0.21, 0.24, 0.26, 0.27, 0.4, 0.5, 0.6, 0.8};
     cout.precision(15);
 
     for (double x0 : x0s) {

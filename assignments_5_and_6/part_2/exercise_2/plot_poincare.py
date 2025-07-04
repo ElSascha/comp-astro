@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-x0s = [0.21, 0.24, 0.26, 0.27, 0.4, 0.5, 0.6, 0.8]
+x0s = [0.19, 0.21, 0.24, 0.26, 0.27, 0.4, 0.5, 0.6, 0.8]
 
 
 
