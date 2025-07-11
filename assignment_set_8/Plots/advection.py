@@ -28,39 +28,39 @@ x = np.linspace(-1, 1, centered_differencing.shape[1])
 u_analytical = analytical_solution_periodic(x, t, a, L=2.0)
 # Set up figure and axes
 fig, ax = plt.subplots(figsize=(10, 6))
-#line1, = ax.plot(x, centered_differencing[999], label='Centered Differencing', color='blue')
-#line2, = ax.plot(x, upwind[999], label='Upwind', color='red')
-line3, = ax.plot(x, lax_wendroff[999], label='Lax-Wendroff', color='green')
-line4, = ax.plot(x, u_analytical, label='Analytical Solution', color='black', linestyle='--')
+line1, = ax.plot(x, centered_differencing[0], label='Centered Differencing', color='blue')
+line2, = ax.plot(x, upwind[0], label='Upwind', color='red')
+line3, = ax.plot(x, lax_wendroff[0], label='Lax-Wendroff', color='green')
+#line4, = ax.plot(x, u_analytical[0], label='Analytical Solution', color='black', linestyle='--')
 
 ax.set_xlim(x.min(), x.max())
-#ax.set_ylim(-0.1, 1.1)  # Passe an deine Daten an
+#ax.set_ylim(-0.1, 1.1)  
 ax.set_xlabel('x')
 ax.set_ylabel('u(x,t)')
 ax.set_title('Advection Equation Solutions (Animation)')
 ax.legend()
 ax.grid()
+
+
+# Init-Funktion
+def init():
+    line1.set_data([], [])
+    line2.set_data([], [])
+    line3.set_data([], [])
+    return line1, line2, line3
+
+# Update-Funktion für Frame i
+def update(i):
+    #line1.set_data(x, centered_differencing[i])
+    #line2.set_data(x, upwind[i])
+    line3.set_data(x, lax_wendroff[i])
+    return line1, line2, line3
+
+# Erzeuge Animation
+ani = animation.FuncAnimation(
+    fig, update, frames=1000, init_func=init, blit=True, interval=4  # 4ms ≈ 250 fps
+)
+
+# Zeige Animation
 plt.show()
-
-# # Init-Funktion
-# def init():
-#     line1.set_data([], [])
-#     line2.set_data([], [])
-#     line3.set_data([], [])
-#     return line1, line2, line3
-
-# # Update-Funktion für Frame i
-# def update(i):
-#     line1.set_data(x, centered_differencing[i])
-#     #line2.set_data(x, upwind[i])
-#     #line3.set_data(x, lax_wendroff[i])
-#     return line1, line2, line3
-
-# # Erzeuge Animation
-# ani = animation.FuncAnimation(
-#     fig, update, frames=1000, init_func=init, blit=True, interval=4  # 4ms ≈ 250 fps
-# )
-
-# # Zeige Animation
-# plt.show()
-# ani.save("advection_centered_differencing.mp4", fps=250)
+ani.save("advection_lax_wendroff.mp4", fps=250)

@@ -55,7 +55,7 @@ int main(){
     periodic_boundary_conditions(u);
     
     std::ostringstream filename;
-    filename << "lax_wendroff" << "_sigma_" << std::fixed << std::setprecision(1) << sigma << ".txt";
+    filename << "upwind" << "_sigma_" << std::fixed << std::setprecision(1) << sigma << ".txt";
     std::ofstream file(filename.str());
     if(!file.is_open()) {
         std::cerr << "Error opening file: " << filename.str() << std::endl;
@@ -71,7 +71,7 @@ int main(){
             if(i < (int)u.size() - 2) file << ";";
         }
         file << "\n"; // new line for each time step
-        time_step(u, sigma, lax_wendroff); // Change to upwind or lax_wendroff as needed
+        time_step(u, sigma, upwind); // Change to upwind or lax_wendroff as needed
     }
     return 0;
 
