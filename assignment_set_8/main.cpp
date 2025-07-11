@@ -15,8 +15,8 @@ double u_start(double x){
 
 void periodic_boundary_conditions(vector<double> &u){
     int N = u.size() - 2; // assuming u has ghost cells
-    u[0] = u[N]; // left boundary condition (ghost cell)
-    u[N + 1] = u[1]; // right boundary condition (ghost cell
+    u[0] = u[N-1]; // left boundary condition (ghost cell)
+    u[N + 1] = u[1]; // right boundary condition (ghost cell)
 }
 
 void save_state(const vector<double> &u, const std::string &filename){
