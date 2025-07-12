@@ -39,7 +39,7 @@ void time_step(vector<double> &u, double sigma, std::vector<double> (*method)(co
 int main(){
     double boundries[2] = {-1.0, 1.0}; // x_min, x_max
     double a = 1.0; // advection speed
-    double sigma = 0.8; // Courant number
+    double sigma = 2; // Courant number
     int grid_size = 400; // number of grid points
     double dx = (boundries[1] - boundries[0]) / grid_size; // grid spacing
     double dt = sigma * dx / a; // time step size
@@ -55,7 +55,7 @@ int main(){
     periodic_boundary_conditions(u);
     
     std::ostringstream filename;
-    filename << "upwind" << "_sigma_" << std::fixed << std::setprecision(1) << sigma << ".txt";
+    filename << "upwind_unstable" << "_sigma_" << std::fixed << std::setprecision(1) << sigma << ".txt";
     std::ofstream file(filename.str());
     if(!file.is_open()) {
         std::cerr << "Error opening file: " << filename.str() << std::endl;
