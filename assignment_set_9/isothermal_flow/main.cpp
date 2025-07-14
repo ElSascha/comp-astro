@@ -87,7 +87,7 @@ int main() {
 
     // initial conditions
     for (int i = 0; i < grid_size ; ++i) {
-        double x = domain[0] + (i - 0.5) * dx;
+        double x = domain[0] + (i + 0.5) * dx;
         rho[i + ghost_cells] = initial_density(x);
         momentum[i + ghost_cells] = 0.0;
     }
@@ -113,7 +113,7 @@ int main() {
         upwind_advection_step(rho, momentum, dt, dx);
         // output results
         for (int i = 0; i < grid_size; ++i) {
-            double x = domain[0] + (i - 0.5) * dx;
+            double x = domain[0] + (i + 0.5) * dx;
             file << step << ";"
                  << fixed << setprecision(6) << x << ";"
                  << rho[i + ghost_cells] << ";"
