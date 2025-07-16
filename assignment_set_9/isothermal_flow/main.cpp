@@ -78,6 +78,19 @@ void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double
     }
 }
 
+void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum) {
+    // left
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[i] = rho[2 * ghost_cells - 1 - i];
+        momentum[i] = -momentum[2 * ghost_cells - 1 - i];
+    }
+
+    // right
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
+        momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
+    } 
+}
 
 int main() {
     double dx = (domain[1] - domain[0]) / grid_size;
@@ -87,7 +100,7 @@ int main() {
     vector<double> momentum(grid_size + 2*ghost_cells);  // momentum density with ghost cells
 
     // initial conditions
-    for (int i = 0; i < grid_size ; ++i) {
+    for (int i = 0; i < grid_size + ghost_cells ; ++i) {
         double x = domain[0] + (i + 0.5) * dx;
         rho[i + ghost_cells] = initial_density(x);
         momentum[i + ghost_cells] = 0.0;
