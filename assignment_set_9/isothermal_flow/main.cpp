@@ -67,6 +67,14 @@ void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double
 void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum) {
    
     // left
+    rho[0] = rho[1];
+    momentum[0] = -momentum[1];
+
+    // right
+    rho[grid_size + 1] = rho[grid_size];
+    momentum[grid_size + 1] = -momentum[grid_size];
+
+    /* // left
     for (int i = 0; i < ghost_cells; ++i) {
         rho[i] = rho[2 * ghost_cells - 1 - i];
         momentum[i] = -momentum[2 * ghost_cells - 1 - i];
@@ -76,20 +84,21 @@ void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentu
     for (int i = 0; i < ghost_cells; ++i) {
         rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
         momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
-    }
+    } */
 }
 
 int main() {
     double dx = (domain[1] - domain[0]) / grid_size;
     double dt = sigma * dx / c_s;
+    double steps_dt = steps/dt;
     vector<double> rho(grid_size + 2*ghost_cells);       // density with ghost cells
     vector<double> momentum(grid_size + 2*ghost_cells);  // momentum density with ghost cells
 
     // initial conditions
     for (int i = 0; i < grid_size ; ++i) {
         double x = domain[0] + (i + 0.5) * dx;
-        rho[i + ghost_cells] = initial_density(x);
-        momentum[i + ghost_cells] = 0.0;
+        rho[i + 1] = initial_density(x);
+        momentum[i] = 0.0;
     }
 
     // boundary conditions
@@ -108,7 +117,7 @@ int main() {
     file << "Step;Position;Density;Momentum\n";
 
     // Time integration loop
-    for (int step = 0; step < steps; ++step) {
+    for (int step = 0; step < steps_dt; ++step) {
         reflective_boundary_conditions(rho, momentum);
         upwind_advection_step(rho, momentum, dt, dx);
         // output results

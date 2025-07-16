@@ -115,6 +115,15 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
 void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum, vector<double> &total_energy) {
    
     // left
+    rho[0] = rho[1];
+    momentum[0] = -momentum[1];
+
+    // right
+    rho[grid_size + 1] = rho[grid_size];
+    momentum[grid_size + 1] = -momentum[grid_size];
+
+    /*
+    // left
     for (int i = 0; i < ghost_cells; ++i) {
         rho[i] = rho[2 * ghost_cells - 1 - i];
         momentum[i] = -momentum[2 * ghost_cells - 1 - i];
@@ -126,7 +135,7 @@ void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentu
         rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
         momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
         total_energy[ghost_cells + grid_size + i] = total_energy[ghost_cells + grid_size - 1 - i];
-    }
+    } */
 }
 
 int main() {

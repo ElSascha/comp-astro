@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # Daten einlesen
 data = np.loadtxt(r'../output/isothermal_flow.txt', delimiter=';', skiprows=1)
 # Parameter
-num_steps = 100      # Anzahl der Zeitschritte
+num_steps = 1000     # Anzahl der Zeitschritte
 num_points = 500     # Anzahl der Gitterzellen
 
 # Daten vorbereiten
