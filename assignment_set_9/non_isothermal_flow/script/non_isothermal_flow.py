@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # Daten einlesen
 data = np.loadtxt(r'../output/non_isothermal_flow.txt', delimiter=';', skiprows=1)
 # Parameter
-num_steps = 40      # Anzahl der Zeitschritte
+num_steps = 2095    # Anzahl der Zeitschritte
 num_points = 500     # Anzahl der Gitterzellen
 
 # Daten vorbereiten
@@ -24,7 +24,7 @@ line1, = ax.plot([], [], lw=2, label = 'density')
 line2, = ax.plot([], [], lw=2, label = 'momentum')
 line3, = ax.plot([], [], lw=2, label = 'internal energy')
 ax.set_xlim(x_values[0], x_values[-1])
-ax.set_ylim(np.min(internal_energy) - 0.1, np.max(internal_energy) + 0.1)
+ax.set_ylim(0.75,1.25)
 ax.set_xlabel("x")
 ax.set_ylabel("Value")
 ax.set_title("non isothermal flow")
@@ -40,6 +40,8 @@ def init():
 
 # Animationsfunktion
 def update(frame):
+    current_time = data[frame * num_points, 0]  # Get the time for this frame
+    ax.set_title(f"non isothermal flow – t = {current_time:.2f} s")
     #line1.set_data(x_values, density[frame])
     #line2.set_data(x_values, momentum[frame])
     line3.set_data(x_values, internal_energy[frame])

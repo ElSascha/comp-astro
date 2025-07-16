@@ -15,7 +15,7 @@ using namespace std;
 const double eps = 1e-8; // for numerical stability
 const int grid_size = 500;
 double domain[2] = {0, 100};
-const int steps = 40;
+const int total_time = 40;
 const double g = 1.4; // adiabatic exponent
 const int ghost_cells = 10; // Number of ghost cells for boundary conditions
 const double CFL = 0.1; // Courant-Friedrichs-Lewy condition
@@ -49,6 +49,23 @@ double eps_total(double density, double momentum, double epsilon) {
     double v = momentum / max(density, eps);
     return v * v / 2 + epsilon;
 }
+
+void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum, vector<double> &total_energy) {
+    // left
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[i] = rho[2 * ghost_cells - 1 - i];
+        momentum[i] = -momentum[2 * ghost_cells - 1 - i];
+        total_energy[i] = total_energy[2 * ghost_cells - 1 - i];
+    }
+
+    // right
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
+        momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
+        total_energy[ghost_cells + grid_size + i] = total_energy[ghost_cells + grid_size - 1 - i];
+    } 
+}
+
 void upwind_advection_step(vector<double> &density, vector<double> &momentum,vector<double> &total_energy) {
     double dt = calc_dt(density, momentum, total_energy);
     static vector<double> density_half(density.size()); // Temporary storage for half-step density
@@ -71,22 +88,22 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
         if (u_half_pos > 0) {
             F_rho_pos = density[i] * u_half_pos;
             F_mom_pos = momentum[i] * u_half_pos;
-            F_energy_pos = total_energy[i] * u_half_pos + p_half_pos * u_half_pos;
+            F_energy_pos = (total_energy[i]+p_half_pos)* u_half_pos;
         } else {
             F_rho_pos = density[i + 1] * u_half_pos;
             F_mom_pos = momentum[i + 1] * u_half_pos;
-            F_energy_pos = total_energy[i + 1] * u_half_pos + p_half_pos * u_half_pos;
+            F_energy_pos = (total_energy[i+1]+p_half_pos) * u_half_pos;
         }
 
         // Upwind: negative direction
         if (u_half_neg > 0) {
             F_rho_neg = density[i - 1] * u_half_neg;
             F_mom_neg = momentum[i - 1] * u_half_neg;
-            F_energy_neg = total_energy[i - 1] * u_half_neg + p_half_neg * u_half_neg;
+            F_energy_neg = (total_energy[i-1]+p_half_neg)* u_half_neg;
         } else {
             F_rho_neg = density[i] * u_half_neg;
             F_mom_neg = momentum[i] * u_half_neg;
-            F_energy_neg = total_energy[i] * u_half_neg + p_half_neg * u_half_neg;
+            F_energy_neg = (total_energy[i]+p_half_neg) * u_half_neg;
         }
 
         // Update half-step
@@ -94,17 +111,23 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
         momentum_half[i] = momentum[i] - dt / dx * (F_mom_pos - F_mom_neg);
         total_energy_half[i] = total_energy[i] - dt / dx * (F_energy_pos - F_energy_neg);
     }
-
+    
+    reflective_boundary_conditions(density_half, momentum_half, total_energy_half);
     // Final update with pressure force
     for (int i = ghost_cells; i < grid_size +ghost_cells; ++i) {
         double u_p = momentum_half[i+1] / max(density_half[i+1], eps);
         double u_m = momentum_half[i-1] / max(density_half[i-1], eps);
-        double u = momentum[i] / max(density[i], eps);
-        double eps_tot = total_energy[i]/ max(density[i], eps);
-        double eps_kin = 0.5 * u * u; // Kinetic energy
-        double epsilon = eps_tot - eps_kin; // Internal energy
-        double pressure_p = p(density_half[i+1], epsilon); // Pressure at "half-step" in positive direction
-        double pressure_m = p(density_half[i-1], epsilon); // Pressure at "half-step" in negative direction
+
+        double eps_tot_p = total_energy_half[i+1] / max(density_half[i+1], eps);
+        double eps_kin_p = 0.5 * u_p * u_p;
+        double epsilon_p = eps_tot_p - eps_kin_p;
+
+        double eps_tot_m = total_energy_half[i-1] / max(density_half[i-1], eps);
+        double eps_kin_m = 0.5 * u_m * u_m;
+        double epsilon_m = eps_tot_m - eps_kin_m;
+
+        double pressure_p = p(density_half[i+1], epsilon_p);
+        double pressure_m = p(density_half[i-1], epsilon_m);
         // Update final step
         density[i] = density_half[i];
         momentum[i] = momentum_half[i] - (dt / (2*dx))*(pressure_p - pressure_m);
@@ -112,31 +135,6 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
     }
 }
 
-void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum, vector<double> &total_energy) {
-   
-    // left
-    rho[0] = rho[1];
-    momentum[0] = -momentum[1];
-
-    // right
-    rho[grid_size + 1] = rho[grid_size];
-    momentum[grid_size + 1] = -momentum[grid_size];
-
-    /*
-    // left
-    for (int i = 0; i < ghost_cells; ++i) {
-        rho[i] = rho[2 * ghost_cells - 1 - i];
-        momentum[i] = -momentum[2 * ghost_cells - 1 - i];
-        total_energy[i] = total_energy[2 * ghost_cells - 1 - i];
-    }
-
-    // right
-    for (int i = 0; i < ghost_cells; ++i) {
-        rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
-        momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
-        total_energy[ghost_cells + grid_size + i] = total_energy[ghost_cells + grid_size - 1 - i];
-    } */
-}
 
 int main() {
     double initial_eps = 1.0; // Initial internal energy
@@ -164,25 +162,28 @@ int main() {
         return 1;
     }
     file << "Step;Position;Density;Momentum;InternalEnergy\n";
-
-    // Time integration loop
-    for (int step = 0; step < steps; ++step) {
+    double steps_dt = 0;
+    int total = 0;
+    while(steps_dt < total_time) {
+        double dt = calc_dt(density, momentum, total_energy);
+        steps_dt += dt;
+        total++;
         reflective_boundary_conditions(density, momentum, total_energy);
         upwind_advection_step(density, momentum, total_energy);
+
         // output results
         for (int i = 0; i < grid_size; ++i) {
             double x = domain[0] + (i + 0.5) * dx;
-            file << step << ";"
-                 << fixed << setprecision(6) << x << ";"
+            file << fixed << setprecision(6) << steps_dt << ";"
+                 << x << ";"
                  << density[i + ghost_cells] << ";"
                  << momentum[i + ghost_cells] << ";"
-                 << total_energy[i+ghost_cells]/density[i + ghost_cells] - 0.5*pow(momentum[i+ghost_cells]/density[i+ghost_cells],2) << "\n";
-
+                 << total_energy[i + ghost_cells] / density[i + ghost_cells] - 0.5 * pow(momentum[i + ghost_cells] / density[i + ghost_cells], 2) << "\n";
         }
         file.flush();  // safety flush to ensure data is written to file
     }
-
+    
     file.close();
-    cout << "simulation complete" << filename.str() << endl;
+    std::cout << total;
     return 0;
 }

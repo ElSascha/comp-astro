@@ -17,10 +17,24 @@ int grid_size = 500;
 double sigma = 0.5;
 double domain[2] = {0, 100};
 int steps = 100;
-int ghost_cells = 2; // Number of ghost cells for boundary conditions
+int ghost_cells = 6; // Number of ghost cells for boundary conditions on each side of the grid
 
 double initial_density(double x) {
     return 1.0 + 0.3 * exp(-pow(x - 50, 2) / 10);
+}
+
+void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum) {
+ // left
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[i] = rho[2 * ghost_cells - 1 - i];
+        momentum[i] = -momentum[2 * ghost_cells - 1 - i];
+    }
+
+    // right
+    for (int i = 0; i < ghost_cells; ++i) {
+        rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
+        momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
+    } 
 }
 
 void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double dt, double dx) {
@@ -56,7 +70,7 @@ void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double
         rho_half[i] = rho[i] - dt / dx * (F_rho_pos - F_rho_neg);
         momentum_half[i] = momentum[i] - dt / dx * (F_mom_pos - F_mom_neg);
     }
-
+    reflective_boundary_conditions(rho_half, momentum_half);
     // Final update with pressure force
     for (int i = ghost_cells; i < grid_size +ghost_cells; ++i) {
         rho[i] = rho_half[i];
@@ -64,28 +78,6 @@ void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double
     }
 }
 
-void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum) {
-   
-    // left
-    rho[0] = rho[1];
-    momentum[0] = -momentum[1];
-
-    // right
-    rho[grid_size + 1] = rho[grid_size];
-    momentum[grid_size + 1] = -momentum[grid_size];
-
-    /* // left
-    for (int i = 0; i < ghost_cells; ++i) {
-        rho[i] = rho[2 * ghost_cells - 1 - i];
-        momentum[i] = -momentum[2 * ghost_cells - 1 - i];
-    }
-
-    // right
-    for (int i = 0; i < ghost_cells; ++i) {
-        rho[ghost_cells+ grid_size + i] = rho[ghost_cells + grid_size - 1 - i];
-        momentum[ghost_cells + grid_size + i] = -momentum[ghost_cells + grid_size - 1 - i];
-    } */
-}
 
 int main() {
     double dx = (domain[1] - domain[0]) / grid_size;
@@ -97,8 +89,8 @@ int main() {
     // initial conditions
     for (int i = 0; i < grid_size ; ++i) {
         double x = domain[0] + (i + 0.5) * dx;
-        rho[i + 1] = initial_density(x);
-        momentum[i] = 0.0;
+        rho[i + ghost_cells] = initial_density(x);
+        momentum[i + ghost_cells] = 0.0;
     }
 
     // boundary conditions

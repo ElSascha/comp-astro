@@ -1,0 +1,1 @@
+by adding a viscosity in exercise c), you can see that the oscillations at the shock fronts are smaller. But there are still some slight oscillations, maybe by increasing xi these would vanish.

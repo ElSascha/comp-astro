@@ -38,6 +38,6 @@ def update(frame):
 
 # Animation erstellen
 ani = animation.FuncAnimation(fig, update, frames=num_steps, init_func=init, blit=True, interval=100)
-ani.save('isothermal_flow_animation.mp4', writer='ffmpeg', fps=100)
+ani.save(r'../plots/isothermal_flow_animation.mp4', writer='ffmpeg', fps=100)
 plt.tight_layout()
 plt.show()
