@@ -17,7 +17,7 @@ int grid_size = 500;
 double sigma = 0.5;
 double domain[2] = {0, 100};
 int steps = 100;
-int ghost_cells = 2; // Number of ghost cells for boundary conditions
+int ghost_cells = 1; // Number of ghost cells for boundary conditions
 
 double initial_density(double x) {
     return 1.0 + 0.3 * exp(-pow(x - 50, 2) / 10);
@@ -67,8 +67,8 @@ void upwind_advection_step(vector<double> &rho, vector<double> &momentum, double
 void reflective_boundary_conditions(vector<double> &rho, vector<double> &momentum) {
    
     // left
-    rho[0] = rho[1];
-    momentum[0] = -momentum[1];
+    rho[0 + ghost_cells] = rho[1 + ghost_cells];
+    momentum[0 + ghost_cells] = -momentum[1 + ghost_cells];
 
     // right
     rho[grid_size + 1] = rho[grid_size];
@@ -95,10 +95,10 @@ int main() {
     vector<double> momentum(grid_size + 2*ghost_cells);  // momentum density with ghost cells
 
     // initial conditions
-    for (int i = 0; i < grid_size ; ++i) {
+    for (int i = 0; i < grid_size + ghost_cells ; ++i) {
         double x = domain[0] + (i + 0.5) * dx;
-        rho[i + 1] = initial_density(x);
-        momentum[i] = 0.0;
+        rho[i + ghost_cells] = initial_density(x);
+        momentum[i + ghost_cells] = 0.0;
     }
 
     // boundary conditions
