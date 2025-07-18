@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # Daten einlesen
 data = np.loadtxt(r'../output/isothermal_flow.txt', delimiter=';', skiprows=1)
 # Parameter
-num_steps = 1000     # Anzahl der Zeitschritte
+num_steps = 1001     # Anzahl der Zeitschritte
 num_points = 500     # Anzahl der Gitterzellen
 
 # Daten vorbereiten
@@ -32,8 +32,9 @@ def init():
 
 # Animationsfunktion
 def update(frame):
+    current_time = data[frame * num_points, 0]  # Get the time for this frame
     line.set_data(x_values, density[frame])
-    ax.set_title(f"Isotherme Gasdichte – Zeitschritt {frame}")
+    ax.set_title(f" isothermal flow – t = {current_time:.2f} s")
     return line,
 
 # Animation erstellen

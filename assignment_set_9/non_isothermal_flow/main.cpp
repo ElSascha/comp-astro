@@ -12,7 +12,6 @@
 using namespace std;
 
 
-const double eps = 1e-8; // for numerical stability
 const int grid_size = 500;
 double domain[2] = {0, 100};
 const int total_time = 40;
@@ -33,9 +32,9 @@ double calc_cs(double epsilon){
 double calc_dt(vector<double> &density, vector<double> &momentum, vector<double> &total_energy) {
     double v_max = 0.0;
     for (int i = ghost_cells; i < grid_size + ghost_cells; ++i) {
-        double u = momentum[i] / max(density[i], eps);
+        double u = momentum[i] / density[i];
         double e_kin = 0.5 * u * u;
-        double epsilon = (total_energy[i] / max(density[i], eps)) - e_kin;
+        double epsilon = (total_energy[i] / density[i]) - e_kin;
         double cs = calc_cs(epsilon);
         v_max = max(v_max, fabs(u) + cs);
     }
@@ -46,7 +45,7 @@ double p(double density, double epsilon){
 }
 
 double eps_total(double density, double momentum, double epsilon) {
-    double v = momentum / max(density, eps);
+    double v = momentum / density;
     return v * v / 2 + epsilon;
 }
 
@@ -73,10 +72,10 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
     static vector<double> total_energy_half(total_energy.size()); // Temporary storage for half-step total energy
 
     for (int i = ghost_cells; i < grid_size + ghost_cells; ++i) {
-        double u_half_pos = 0.5 * (momentum[i] / max(density[i], eps) + momentum[i + 1] / max(density[i + 1], eps)); // Average velocity at "half-step" in positive direction
-        double u_half_neg = 0.5 * (momentum[i - 1] / max(density[i - 1], eps) + momentum[i] / max(density[i], eps));
-        double u = momentum[i] / max(density[i], eps); // Current velocity
-        double eps_tot = total_energy[i] / max(density[i], eps); // Current total energy
+        double u_half_pos = 0.5 * (momentum[i] / density[i] + momentum[i + 1] / density[i+1]); // Average velocity at "half-step" in positive direction
+        double u_half_neg = 0.5 * (momentum[i - 1] / density[i-1] + momentum[i] / density[i]);
+        double u = momentum[i] / density[i]; // Current velocity
+        double eps_tot = total_energy[i] / density[i]; // Current total energy
         double eps_kin = 0.5 * u * u; // Kinetic energy
         double epsilon = eps_tot - eps_kin; // Internal energy
         double p_half_pos = p(density[i + 1], epsilon); // Pressure at "half-step" in positive direction
@@ -115,14 +114,14 @@ void upwind_advection_step(vector<double> &density, vector<double> &momentum,vec
     reflective_boundary_conditions(density_half, momentum_half, total_energy_half);
     // Final update with pressure force
     for (int i = ghost_cells; i < grid_size +ghost_cells; ++i) {
-        double u_p = momentum_half[i+1] / max(density_half[i+1], eps);
-        double u_m = momentum_half[i-1] / max(density_half[i-1], eps);
+        double u_p = momentum_half[i+1] / density_half[i+1];
+        double u_m = momentum_half[i-1] / density_half[i-1];
 
-        double eps_tot_p = total_energy_half[i+1] / max(density_half[i+1], eps);
+        double eps_tot_p = total_energy_half[i+1] /density_half[i+1];
         double eps_kin_p = 0.5 * u_p * u_p;
         double epsilon_p = eps_tot_p - eps_kin_p;
 
-        double eps_tot_m = total_energy_half[i-1] / max(density_half[i-1], eps);
+        double eps_tot_m = total_energy_half[i-1] /density_half[i-1];
         double eps_kin_m = 0.5 * u_m * u_m;
         double epsilon_m = eps_tot_m - eps_kin_m;
 
