@@ -1,6 +1,24 @@
+# IDEs
 .vscode/
+
+# Build-Artefakte
+**/build
 **/obj/
 **/main
-**/build
-**/*.dat
-**/*.csv
+*.o
+*.out
+*.exe
+*.a
+*.so
+
+# Daten
+*.csv
+*.dat
+
+# Temporäre & Debug-Dateien
+*~
+*.log
+
+# CUDA
+*.ptx
+*.cubin
