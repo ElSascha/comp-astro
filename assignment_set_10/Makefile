@@ -3,7 +3,7 @@ NVCC      = nvcc
 CXX       = g++
 
 # Flags
-NVCCFLAGS = -O3 -std=c++17
+NVCCFLAGS = -O3 -std=c++17 -Wno-deprecated-gpu-targets
 CXXFLAGS  = -O3 -std=c++17
 
 # Directories
@@ -41,3 +41,5 @@ $(BUILD_DIR)/%.o: $(LIB_DIR)/%.cpp $(HEADERS)
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
+
+.PHONY: all clean
