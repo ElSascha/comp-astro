@@ -1,5 +1,3 @@
-#ifndef SPH_KERNEL_CUH
-#define SPH_KERNEL_CUH
 #include "sph_functions.cuh"
 
 
@@ -14,24 +12,30 @@ constexpr double SMOOTHING_LENGTH = 0.2;
 constexpr int NUM_PARTICLES = 1000;
 constexpr double TIME = 20.0;
 constexpr double TIME_STEP = 0.01;
-constexpr double NORMALAIZATION_CONSTANT = 8/M_PI;
+constexpr double NORMALIZATION_CONSTANT = 8/M_PI;
+constexpr double LAMBDA = 2.01203286081606;
 
-// Partikel-Datenstruktur
-struct Particle {
-    double3 pos;      // position
-    double3 vel;      // velocity
-    double3 acc;      // acceleration
-    double mass;
-    double rho;
-    double pressure;
+// Use SoA (Structure of Arrays) for particle data
+struct ParticleData {
+    double3* pos;      // position
+    double3* vel;      // velocity
+    double3* acc;      // acceleration
+    double3* linear_acc_fore;
+    double3* damping_force;      
+    double* mass;
+    double* rho;
+    double* pressure;
+    double* cs;       // sound speed
+    
 };
 
 // CUDA-Kernel-Deklaration
 
 __device__ double cubic_bspline(double r, double h); 
-
-__global__ void compute_density(Particle* particles);
-
-__global__ void compute_pressure(Particle* particles);
-
-#endif // SPH_KERNEL_CUH
+__global__ void compute_density(ParticleData particles, int N, double smoothing_length);
+__global__ void compute_pressure(ParticleData particles, int N, double GAMMA, double K);
+__global__ void compute_cs(ParticleData particles, int N, double GAMMA);
+__global__ void compute_acceleration(ParticleData particles, int N, double smoothing_length);
+__device__ double3 cubic_bspline_derivative(double3 a, double3 b, double h);
+__global__ void compute_linear_acceleration_fore(ParticleData particles, int N, int lambda);
+__global__ void compute_damping_force(ParticleData particles, int N, double damping_coefficient);
