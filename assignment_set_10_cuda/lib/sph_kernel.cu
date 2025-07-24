@@ -45,6 +45,7 @@ __global__ void compute_density(ParticleData particles, int N, double smoothing_
             particles.rho[i] += particles.mass[j] * cubic_bspline(r, smoothing_length);
         }
     }
+    if (particles.rho[i] < 1e-12) particles.rho[i] = 1e-12; // Avoid division by zero
 }
 
 __global__ void compute_cs(ParticleData particles, int N, double GAMMA) {
@@ -65,6 +66,7 @@ __global__ void compute_acceleration(ParticleData particles, int N, double smoot
                  particles.mass[j] * (particles.pressure[j]/pow(particles.rho[j], 2) + particles.pressure[i]/pow(particles.rho[i], 2))));
         }
     }
+    particles.acc[i] = add(add(particles.acc[i], particles.linear_acc_fore[i]), particles.damping_force[i]); // Combine acceleration with linear acceleration fore and damping force
 }
 
 __global__ void compute_pressure(ParticleData particles, int N, double GAMMA, double K) {

@@ -1,5 +1,7 @@
 #include "../lib/sph_kernel.cuh"
+#include "../lib/velocity_verlet.cuh"
 #include <fstream>
+
 
 //SPH toy Star with gravity using CUDA
 void init_particles(ParticleData& particles, int N) {
@@ -30,14 +32,8 @@ void free_particles(ParticleData& particles) {
 
 int main(){
     ParticleData particles;
-    cudaMalloc(&particles.pos, NUM_PARTICLES * sizeof(double3));
-    cudaMalloc(&particles.vel, NUM_PARTICLES * sizeof(double3));
-    cudaMalloc(&particles.acc, NUM_PARTICLES * sizeof(double3));
-    cudaMalloc(&particles.pressure, NUM_PARTICLES * sizeof(double));
-    cudaMalloc(&particles.rho, NUM_PARTICLES * sizeof(double));
-    cudaMalloc(&particles.cs, NUM_PARTICLES * sizeof(double));
-    cudaMalloc(&particles.linear_acc_fore, NUM_PARTICLES * sizeof(double3));
-    cudaMalloc(&particles.damping_force, NUM_PARTICLES * sizeof(double3));
+    // Initialize particles
+    init_particles(particles, NUM_PARTICLES);
     // Initialize host data
     std::vector<double3> h_pos(NUM_PARTICLES);
     std::vector<double3> h_vel(NUM_PARTICLES);
@@ -49,7 +45,7 @@ int main(){
     std::vector<double3> h_linear_acc_fore(NUM_PARTICLES);
     std::vector<double3> h_damping_force(NUM_PARTICLES);
     // Initialize host data with distribution from file
-    std::ifstream infile("../initial_dis/random_distribution.dat");
+    std::ifstream infile("initial_dis/random_distribution.dat");
     if(!infile) {
         std::cerr << "Error opening initial data file\n";
         return 1;
@@ -63,6 +59,65 @@ int main(){
         h_linear_acc_fore[i] = {0.0, 0.0, 0.0}; // Initial linear acceleration
         h_damping_force[i] = {0.0, 0.0, 0.0}; // Initial damping force
     }
+    // Copy host data to device
+    cudaMemcpy(particles.pos, h_pos.data(), NUM_PARTICLES * sizeof(double3), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.vel, h_vel.data(), NUM_PARTICLES * sizeof(double3), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.acc, h_acc.data(), NUM_PARTICLES * sizeof(double3), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.pressure, h_pressure.data(), NUM_PARTICLES * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.rho, h_rho.data(), NUM_PARTICLES * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.cs, h_cs.data(), NUM_PARTICLES * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.linear_acc_fore, h_linear_acc_fore.data(), NUM_PARTICLES * sizeof(double3), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles.damping_force, h_damping_force.data(), NUM_PARTICLES * sizeof(double3), cudaMemcpyHostToDevice);
+    // start counter to measure time
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+    int steps = TIME / TIME_STEP;
+    std::ofstream outfile("data/particles.dat");
+    if(!outfile) {
+            std::cerr << "Error opening output file"<< "\n";
+            return 1;
+        }
+    outfile << "time_step;x;y;z;vx;vy;vz;mass;pressure;rho;cs;linear_acc_fore_x;linear_acc_fore_y;linear_acc_fore_z;damping_force_x;damping_force_y;damping_force_z\n";
+    for(int i = 0; i < steps; i++){
+         time_step(particles, TIME_STEP, NUM_PARTICLES, POLYTROPIC_EXPONENT, POLYTROPIC_CONSTANT, LAMBDA, DAMPING_COEFFICIENT, SMOOTHING_LENGTH);
 
+        // Copy results back to host for verification or further processing
+        cudaMemcpy(h_pos.data(), particles.pos, NUM_PARTICLES * sizeof(double3), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_vel.data(), particles.vel, NUM_PARTICLES * sizeof(double3), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_acc.data(), particles.acc, NUM_PARTICLES * sizeof(double3), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_pressure.data(), particles.pressure, NUM_PARTICLES * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_rho.data(), particles.rho, NUM_PARTICLES * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_cs.data(), particles.cs, NUM_PARTICLES * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_linear_acc_fore.data(), particles.linear_acc_fore, NUM_PARTICLES * sizeof(double3), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_damping_force.data(), particles.damping_force, NUM_PARTICLES * sizeof(double3), cudaMemcpyDeviceToHost);
+        // write into file
+
+        for(int j = 0; j < NUM_PARTICLES; ++j) {
+            outfile << i * TIME_STEP << ";"
+                    << h_pos[j].x << ";" << h_pos[j].y << ";" << h_pos[j].z << ";"
+                    << h_vel[j].x << ";" << h_vel[j].y << ";" << h_vel[j].z << ";"
+                    << h_mass[j] << ";"
+                    << h_pressure[j] << ";"
+                    << h_rho[j] << ";"
+                    << h_cs[j] << ";"
+                    << h_linear_acc_fore[j].x << ";" << h_linear_acc_fore[j].y << ";" << h_linear_acc_fore[j].z << ";"
+                    << h_damping_force[j].x << ";" << h_damping_force[j].y << ";" << h_damping_force[j].z << "\n";
+        }
+        outfile.flush();
+        if (i % 100 == 0) {
+            std::cout << "Step " << i << " done\n";
+        }
+    }
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    std::cout << "Total time: " << milliseconds << " ms\n";
+
+    // Free device memory
+    free_particles(particles);
+    return 0;
 
 }

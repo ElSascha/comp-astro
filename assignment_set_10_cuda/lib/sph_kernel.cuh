@@ -1,3 +1,4 @@
+#pragma once
 #include "sph_functions.cuh"
 
 
