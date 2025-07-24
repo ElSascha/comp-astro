@@ -29,25 +29,27 @@ damping_force = data[:, 14:17].reshape(num_time_steps, N, 3)
 # Plotting the star
 
 
-fig, ax = plt.subplots(figsize=(6,6))
-scat = ax.scatter(positions[0,:,0], positions[0,:,1], s=1)
+fig = plt.figure(figsize=(8,8))
+ax = fig.add_subplot(111, projection='3d')
+
+scat = ax.scatter(positions[0,:,0], positions[0,:,1], positions[0,:,2], s=1)
+
 ax.set_xlim(-Radius*1.2, Radius*1.2)
 ax.set_ylim(-Radius*1.2, Radius*1.2)
+ax.set_zlim(-Radius*1.2, Radius*1.2)
+
 ax.set_xlabel('x')
 ax.set_ylabel('y')
-ax.set_title('SPH Partikel - Stern Animation')
-ax.set_aspect('equal')
+ax.set_zlabel('z')
 
 def update(frame):
-    scat.set_offsets(positions[frame,:,:2])  # nur x,y
-    ax.set_title(f'SPH Partikel - Stern Animation\nTimestep: {frame}')
+    scat._offsets3d = (positions[frame,:,0], positions[frame,:,1], positions[frame,:,2])
+    current_time = frame * time_step
+    ax.set_title(f'SPH Partikel - Stern Animation (3D)\nZeit: {current_time:.2f} s')
     return scat,
 
-ani = FuncAnimation(fig, update, frames=num_time_steps, interval=20, blit=True)
+# interval so setzen, dass die Animation ca. 20 s läuft (in ms pro Frame)
+interval_ms = (total_time / num_time_steps) * 1000
 
-# Video speichern (benötigt ffmpeg installiert)
-writer = FFMpegWriter(fps=30, bitrate=1800)
-ani.save("sph_star_animation.mp4", writer=writer)
-
+ani = FuncAnimation(fig, update, frames=num_time_steps, interval=interval_ms, blit=False)
 plt.show()
-

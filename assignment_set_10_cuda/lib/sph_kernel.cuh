@@ -21,7 +21,7 @@ struct ParticleData {
     double3* pos;      // position
     double3* vel;      // velocity
     double3* acc;      // acceleration
-    double3* linear_acc_fore;
+    double3* linear_acc_force;
     double3* damping_force;      
     double* mass;
     double* rho;
@@ -38,5 +38,5 @@ __global__ void compute_pressure(ParticleData particles, int N, double GAMMA, do
 __global__ void compute_cs(ParticleData particles, int N, double GAMMA);
 __global__ void compute_acceleration(ParticleData particles, int N, double smoothing_length);
 __device__ double3 cubic_bspline_derivative(double3 a, double3 b, double h);
-__global__ void compute_linear_acceleration_fore(ParticleData particles, int N, int lambda);
+__global__ void compute_linear_acceleration_force(ParticleData particles, int N, double lambda);
 __global__ void compute_damping_force(ParticleData particles, int N, double damping_coefficient);

@@ -37,8 +37,7 @@ __device__ double3 cubic_bspline_derivative(double3 a, double3 b, double h){
 __global__ void compute_density(ParticleData particles, int N, double smoothing_length) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; // Calculate the global thread index
     if (i >= N) return; // Ensure we do not access out of bounds
-
-    particles.rho[i] = 0.0;
+    particles.rho[i] = 0.0; // Initialize density to zero
     for (int j = 0; j < N; ++j) {
         if (i != j) {
             double r = length(sub(particles.pos[i], particles.pos[j]));
@@ -57,32 +56,35 @@ __global__ void compute_cs(ParticleData particles, int N, double GAMMA) {
 __global__ void compute_acceleration(ParticleData particles, int N, double smoothing_length) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return;
-
-    particles.acc[i] = make_double3(0.0, 0.0, 0.0); // Initialize acceleration
+    
+    particles.acc[i] = make_double3(0.0, 0.0, 0.0); // Initialize acceleration to zero
     for(int j = 0; j < N ; j++){
         if(j != i){
             particles.acc[i] = add(particles.acc[i], 
                 scal_mul(cubic_bspline_derivative(particles.pos[i], particles.pos[j], smoothing_length),
-                 particles.mass[j] * (particles.pressure[j]/pow(particles.rho[j], 2) + particles.pressure[i]/pow(particles.rho[i], 2))));
+                 -1*particles.mass[j] * (particles.pressure[i]/pow(particles.rho[i], 2) + particles.pressure[j]/pow(particles.rho[j], 2))));
         }
     }
-    particles.acc[i] = add(add(particles.acc[i], particles.linear_acc_fore[i]), particles.damping_force[i]); // Combine acceleration with linear acceleration fore and damping force
+    
 }
 
 __global__ void compute_pressure(ParticleData particles, int N, double GAMMA, double K) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return; 
+    particles.pressure[i] = 0.0; // Initialize pressure to zero
     particles.pressure[i] = K * pow(particles.rho[i], GAMMA); // Compute pressure using the equation pressure = pi = K*ρ_i^γ
 }
 
-__global__ void compute_linear_acceleration_fore(ParticleData particles, int N, int lambda) {
+__global__ void compute_linear_acceleration_force(ParticleData particles, int N, double lambda) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return; 
-    particles.linear_acc_fore[i] = scal_mul(particles.pos[i],-1*lambda); // Compute linear acceleration fore using the equation a_i = -λ * x_i
+    particles.linear_acc_force[i] = make_double3(0.0, 0.0, 0.0); // Initialize linear acceleration force to zero
+    particles.linear_acc_force[i] = scal_mul(particles.pos[i],-1*lambda); // Compute linear acceleration force using the equation a_i = -λ * x_i
 }
 
 __global__ void compute_damping_force(ParticleData particles, int N, double damping_coefficient) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return; 
+    particles.damping_force[i] = make_double3(0.0, 0.0, 0.0); // Initialize damping force to zero
     particles.damping_force[i] = scal_mul(particles.vel[i], -damping_coefficient); // Compute damping force using the equation f_i = -nu * v_i
 }
