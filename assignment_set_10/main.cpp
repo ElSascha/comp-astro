@@ -71,6 +71,12 @@ double kernelFunctionDerivative(double r_tilde) {
 std::vector<double> nablaKernelFunction(double x1, double y1, double z1, double x2, double y2, double z2) {
     std::vector<double> result(3, 0.0);
     double r_tilde = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
+    
+    // Avoid division by zero when r_tilde = 0 (particle with itself)
+    if (r_tilde < 1e-12) {
+        return result; // Return zero gradient
+    }
+    
     double coeff = kernelFunctionDerivative(r_tilde);
     result[0] = coeff * (x1 - x2) / r_tilde;
     result[1] = coeff * (y1 - y2) / r_tilde;
@@ -110,10 +116,17 @@ std::vector<std::vector<double>> computeAcceleration(const std::vector<double>& 
     std::vector<std::vector<double>> accelerations(N, std::vector<double>(3, 0.0));
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
+            if (i == j) continue; // Skip self-interaction
+            
             std::vector<double> nablaK = nablaKernelFunction(x[i], y[i], z[i], x[j], y[j], z[j]);
-            accelerations[i][0] -= m[j] * (pressure[i]/pow(density[i], 2) + pressure[j]/pow(density[j], 2)) * nablaK[0];
-            accelerations[i][1] -= m[j] * (pressure[i]/pow(density[i], 2) + pressure[j]/pow(density[j], 2)) * nablaK[1];
-            accelerations[i][2] -= m[j] * (pressure[i]/pow(density[i], 2) + pressure[j]/pow(density[j], 2)) * nablaK[2];
+            
+            // Add safety checks for density to prevent division by very small numbers
+            double density_i_sq = std::max(density[i] * density[i], 1e-12);
+            double density_j_sq = std::max(density[j] * density[j], 1e-12);
+            
+            accelerations[i][0] -= m[j] * (pressure[i]/density_i_sq + pressure[j]/density_j_sq) * nablaK[0];
+            accelerations[i][1] -= m[j] * (pressure[i]/density_i_sq + pressure[j]/density_j_sq) * nablaK[1];
+            accelerations[i][2] -= m[j] * (pressure[i]/density_i_sq + pressure[j]/density_j_sq) * nablaK[2];
         }
     }
     return accelerations;
@@ -139,8 +152,34 @@ std::vector<std::vector<double>> computeDampingForce() {
     return dampingForce;
 }
 
+void saveParticleData(double time, const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+    
+    file << "# Time: " << time << std::endl;
+    file << "# Format: x y z vx vy vz m" << std::endl;
+    
+    for (int i = 0; i < N; ++i) {
+        file << x[i] << " " << y[i] << " " << z[i] << " " 
+             << vx[i] << " " << vy[i] << " " << vz[i] << " " << m[i] << std::endl;
+    }
+    
+    file.close();
+}
+
 int main() {
     loadData();
+    
+    // Save initial state
+    saveParticleData(0.0, "particle_data_t0.dat");
+    
+    int step = 0;
+    double save_interval = t_end / 100.0; // Save 100 snapshots during simulation
+    int save_every = static_cast<int>(save_interval / dt);
+    
     for(double t = 0.0; t < t_end; t += dt) {
         std::vector<double> density = computeDensity();
         std::vector<double> soundSpeed = computeSoundSpeed(density);
@@ -159,6 +198,20 @@ int main() {
             y[i] += vy[i] * dt;
             z[i] += vz[i] * dt;
         }
+        
+        step++;
+        
+        // Save particle data at regular intervals
+        if (step % save_every == 0) {
+            std::string filename = "particle_data_t" + std::to_string(step) + ".dat";
+            saveParticleData(t, filename);
+            std::cout << "Saved data at t = " << t << " to " << filename << std::endl;
+        }
     }
+    
+    // Save final state
+    saveParticleData(t_end, "particle_data_final.dat");
+    std::cout << "Simulation completed. Data files saved." << std::endl;
+    
     return 0;
 }

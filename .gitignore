@@ -4,3 +4,4 @@
 **/build
 **/*.dat
 **/*.csv
+**/particles_frame*.png
