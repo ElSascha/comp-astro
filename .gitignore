@@ -12,8 +12,11 @@
 *.so
 
 # Daten
-*.csv
-*.dat
+**/*.csv
+**/*.dat
+
+# Outputs
+**/particles_frame*.png
 
 # Temporäre & Debug-Dateien
 *~
