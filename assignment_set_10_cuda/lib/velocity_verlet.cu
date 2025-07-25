@@ -23,6 +23,19 @@ void time_step_verlet(ParticleData& particles, double dt, int N, double GAMMA, d
     int blocks = (N + 255) / 256; // Calculate number of blocks needed
     int threads = 256; // Number of threads per block
     // 1. Allocate device memory for acc_old
+    compute_density<<<blocks, threads>>>(particles, N, smoothing_length);
+    cudaDeviceSynchronize();
+    compute_pressure<<<blocks, threads>>>(particles, N, GAMMA, K);
+    cudaDeviceSynchronize();
+    compute_cs<<<blocks, threads>>>(particles, N, GAMMA);
+    cudaDeviceSynchronize();
+    // Update acceleration
+    compute_acceleration<<<blocks, threads>>>(particles, N, smoothing_length);
+    cudaDeviceSynchronize();
+    compute_linear_acceleration_force<<<blocks, threads>>>(particles, N, lambda);
+    cudaDeviceSynchronize();
+    compute_damping_force<<<blocks, threads>>>(particles, N, damping_coefficient);
+    cudaDeviceSynchronize();
     double3* acc_old;
     double3* linear_acc_old;
     double3* damping_force_old;
@@ -36,13 +49,6 @@ void time_step_verlet(ParticleData& particles, double dt, int N, double GAMMA, d
     // Calculate new positions
     update_position<<<blocks, threads>>>(particles, N, dt);
     cudaDeviceSynchronize();
-    compute_density<<<blocks, threads>>>(particles, N, smoothing_length);
-    cudaDeviceSynchronize();
-    compute_pressure<<<blocks, threads>>>(particles, N, GAMMA, K);
-    cudaDeviceSynchronize();
-    compute_cs<<<blocks, threads>>>(particles, N, GAMMA);
-    cudaDeviceSynchronize();
-    // Update acceleration
     compute_acceleration<<<blocks, threads>>>(particles, N, smoothing_length);
     cudaDeviceSynchronize();
     compute_linear_acceleration_force<<<blocks, threads>>>(particles, N, lambda);

@@ -39,10 +39,8 @@ __global__ void compute_density(ParticleData particles, int N, double smoothing_
     if (i >= N) return; // Ensure we do not access out of bounds
     particles.rho[i] = 0.0; // Initialize density to zero
     for (int j = 0; j < N; ++j) {
-        if (i != j) {
             double r = length(sub(particles.pos[i], particles.pos[j]));
             particles.rho[i] += particles.mass[j] * cubic_bspline(r, smoothing_length);
-        }
     }
     if (particles.rho[i] < 1e-12) particles.rho[i] = 1e-12; // Avoid division by zero
 }

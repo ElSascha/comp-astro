@@ -5,8 +5,9 @@ __global__ void euler_update_position(ParticleData particles, int N, double dt) 
     if (i >= N) return;
 
     double3 acc_total = add(add(particles.acc[i], particles.linear_acc_force[i]), particles.damping_force[i]);
-    particles.pos[i] = add(particles.pos[i], scal_mul(particles.vel[i], dt));
     particles.vel[i] = add(particles.vel[i], scal_mul(acc_total, dt));
+    particles.pos[i] = add(particles.pos[i], scal_mul(particles.vel[i], dt));
+    
 }
 
 void time_step_euler(ParticleData& particles, double dt, int N, double GAMMA, double K, double lambda, double damping_coefficient, double smoothing_length) {
