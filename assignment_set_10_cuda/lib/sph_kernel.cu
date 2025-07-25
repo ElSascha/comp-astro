@@ -2,31 +2,29 @@
 
 __device__ double cubic_bspline(double r, double h){
     double cons = NORMALIZATION_CONSTANT/pow(h, 3);
-    if(0 <= r/h && r/h < 1.0/2.0){
-        return cons * (6*(pow(r/h,3)) - 6*(pow(r/h,2)) + 1);
-    }
-    else if(1.0/2.0 <= r/h && r/h <= 1.0){
-        return cons * 2*(pow(1-r/h,3));
-    }
-    else{
+    if (0 <= r/h && r/h < 0.5) {
+        return 8/(M_PI * h * h * h) * (6.0 * pow(r/h, 3) - 6.0 * pow(r/h, 2) + 1.0);
+    } else if (0.5 <= r/h && r/h <= 1) {
+        return 8/(M_PI * h * h * h) * (2.0 * pow(1.0 - r/h, 3));
+    } else {
         return 0.0;
     }
 }
 
-__device__ double3 cubic_bspline_derivative(double3 a, double3 b, double h){
-    double r = length(sub(a, b));
-    if (r == 0.0) return make_double3(0.0, 0.0, 0.0); // Avoid division by zero
-    double3 norm_r = scal_div(sub(a,b),r);
-    double cons = 6*NORMALIZATION_CONSTANT/pow(h, 4);
-    if(0 <= r/h && r/h < 1.0/2.0){
-        return scal_mul(norm_r, cons * (3*(pow(r/h,2)) - 2*(r/h)));
+__device__ double cubic_bspline_derivative(double r, double h){
+    if (0 <= r/h && r/h < 0.5) {
+        return 6*8/(M_PI * h * h * h * h) * (3 * pow(r/h, 2) - 2 * (r/h));
+    } else if (0.5 <= r/h && r/h <= 1) {
+        return -6 * 8/(M_PI * h * h * h * h) * pow(1.0 - r/h, 2);
+    } else {
+        return 0.0;
     }
-    else if(1.0/2.0 <= r/h && r/h <= 1.0){
-        return scal_mul(norm_r, cons * -1*(pow(1-r/h,2)));
-    }
-    else{
-        return make_double3(0.0, 0.0, 0.0); // No contribution outside the smoothing length
-    }
+}
+
+__device__ double3 nabla_cubic_bspline(double3 pos_i, double3 pos_j, double h) {
+    double r = length(sub(pos_i, pos_j));
+    double factor = cubic_bspline_derivative(r, h) / r; // Normalize by r to get the gradient
+    return scal_mul(sub(pos_i, pos_j), factor);
 }
 
 // instead of having 2 seperate loops, I will start a thread for each particle and compute the density and pressure in one go
@@ -53,19 +51,29 @@ __global__ void compute_cs(ParticleData particles, int N, double GAMMA) {
     particles.cs[i] = sqrt(GAMMA * particles.pressure[i] / particles.rho[i]); // Compute sound speed using the equation cs = sqrt(gamma * pressure / density)
 }
 
-__global__ void compute_acceleration(ParticleData particles, int N, double smoothing_length) {
+__global__ void compute_acceleration(ParticleData particles, int N, double h) {
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return;
-    
-    particles.acc[i] = make_double3(0.0, 0.0, 0.0); // Initialize acceleration to zero
-    for(int j = 0; j < N ; j++){
-        if(j != i){
-            particles.acc[i] = add(particles.acc[i], 
-                scal_mul(cubic_bspline_derivative(particles.pos[i], particles.pos[j], smoothing_length),
-                 -1*particles.mass[j] * (particles.pressure[i]/pow(particles.rho[i], 2) + particles.pressure[j]/pow(particles.rho[j], 2))));
+
+    particles.acc[i] = make_double3(0.0, 0.0, 0.0); // Reset acceleration
+
+    for (int j = 0; j < N; ++j) {
+        if (j != i) {
+            double3 rij = sub(particles.pos[i], particles.pos[j]);
+            double r = length(rij);
+            if (r < 1e-6) continue;
+
+            double3 gradW = nabla_cubic_bspline(particles.pos[i], particles.pos[j], h);
+
+            
+            double pij = (particles.pressure[i] / (particles.rho[i] * particles.rho[i]) +
+                          particles.pressure[j] / (particles.rho[j] * particles.rho[j]));
+
+            double3 acc_contrib = scal_mul(gradW, -particles.mass[j] * pij);
+
+            particles.acc[i] = add(particles.acc[i], acc_contrib);
         }
     }
-    
 }
 
 __global__ void compute_pressure(ParticleData particles, int N, double GAMMA, double K) {

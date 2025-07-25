@@ -37,6 +37,7 @@ __global__ void compute_density(ParticleData particles, int N, double smoothing_
 __global__ void compute_pressure(ParticleData particles, int N, double GAMMA, double K);
 __global__ void compute_cs(ParticleData particles, int N, double GAMMA);
 __global__ void compute_acceleration(ParticleData particles, int N, double smoothing_length);
-__device__ double3 cubic_bspline_derivative(double3 a, double3 b, double h);
+__device__ double cubic_bspline_derivative(double r, double h);
+__device__ double3 nabla_cubic_bspline(double3 pos_i, double3 pos_j, double h);
 __global__ void compute_linear_acceleration_force(ParticleData particles, int N, double lambda);
 __global__ void compute_damping_force(ParticleData particles, int N, double damping_coefficient);
