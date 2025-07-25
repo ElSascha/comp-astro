@@ -1,7 +1,7 @@
 #include "sph_kernel.cuh"
 
 __device__ double cubic_bspline(double r, double h){
-    double cons = NORMALIZATION_CONSTANT/pow(h, 3);
+    if (r < 0) return 0.0; // Avoid negative distances
     if (0 <= r/h && r/h < 0.5) {
         return 8/(M_PI * h * h * h) * (6.0 * pow(r/h, 3) - 6.0 * pow(r/h, 2) + 1.0);
     } else if (0.5 <= r/h && r/h <= 1) {
@@ -12,6 +12,7 @@ __device__ double cubic_bspline(double r, double h){
 }
 
 __device__ double cubic_bspline_derivative(double r, double h){
+    if (r < 0) return 0.0; // Avoid negative distances
     if (0 <= r/h && r/h < 0.5) {
         return 6*8/(M_PI * h * h * h * h) * (3 * pow(r/h, 2) - 2 * (r/h));
     } else if (0.5 <= r/h && r/h <= 1) {
@@ -23,6 +24,7 @@ __device__ double cubic_bspline_derivative(double r, double h){
 
 __device__ double3 nabla_cubic_bspline(double3 pos_i, double3 pos_j, double h) {
     double r = length(sub(pos_i, pos_j));
+    if (r < 1e-12) return make_double3(0.0, 0.0, 0.0); // Avoid division by zero
     double factor = cubic_bspline_derivative(r, h) / r; // Normalize by r to get the gradient
     return scal_mul(sub(pos_i, pos_j), factor);
 }
@@ -94,5 +96,5 @@ __global__ void compute_damping_force(ParticleData particles, int N, double damp
     int i = blockIdx.x * blockDim.x + threadIdx.x; 
     if (i >= N) return; 
     particles.damping_force[i] = make_double3(0.0, 0.0, 0.0); // Initialize damping force to zero
-    particles.damping_force[i] = scal_mul(particles.vel[i], -damping_coefficient); // Compute damping force using the equation f_i = -nu * v_i
+    particles.damping_force[i] = scal_mul(particles.vel[i], -1*damping_coefficient); // Compute damping force using the equation f_i = -nu * v_i
 }

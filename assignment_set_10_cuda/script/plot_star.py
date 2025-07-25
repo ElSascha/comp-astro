@@ -70,7 +70,7 @@ def update(frame):
 # interval so setzen, dass die Animation ca. 20 s läuft (in ms pro Frame)
 interval_ms = (total_time / num_time_steps) * 1000
 
-ani = FuncAnimation(fig, update, frames=num_time_steps, interval=interval_ms, blit=False)
+#ani = FuncAnimation(fig, update, frames=num_time_steps, interval=interval_ms, blit=False)
 
 
 # Berechne radialen Abstand aller Partikel zum Ursprung (z.B. zum Sternmittelpunkt)
@@ -78,31 +78,18 @@ frame = 0  # Frame to analyze
 radii_particles = np.linalg.norm(positions[frame], axis=1)
 rho_sim = densities[frame]
 
-# Define bins (e.g., 50 bins from 0 to Radius)
-# Define bins from 0 to 2*Radius
-num_bins = 50
-bins = np.linspace(0, 2*Radius, num_bins + 1)
-bin_centers = 0.5 * (bins[:-1] + bins[1:])
-
-# Digitize particle radii to bins
-inds = np.digitize(radii_particles, bins) - 1  # -1 to get 0-based indices
-
-# Compute average density in each bin
-rho_sim_avg = np.array([
-    rho_sim[inds == i].mean() if np.any(inds == i) else np.nan
-    for i in range(num_bins)
-])
-
-# Compute theoretical density at bin centers (for r > Radius, rho=0)
-rho_theory = np.where(bin_centers <= Radius, rho(bin_centers), 0)
+# Create theoretical density curve for comparison
+r_theory = np.linspace(0, 2*Radius, 1000)
+rho_theory = np.where(r_theory <= Radius, rho(r_theory), 0)
 
 # --- Plot ---
-plt.figure(figsize=(8,6))
-plt.plot(bin_centers, rho_theory, label='Theoretische Dichte', linewidth=2)
-plt.plot(bin_centers, rho_sim_avg, color='red', linewidth=2, label='Simulierte Dichte (Mittelwert)')
+plt.figure(figsize=(10,6))
+plt.plot(r_theory, rho_theory, label='Theoretische Dichte', linewidth=2, color='blue')
+plt.scatter(radii_particles, rho_sim, color='red', alpha=0.6, s=10, label='Simulierte Dichte (Einzelpartikel)')
 plt.xlabel('Radius r')
 plt.ylabel('Dichte ρ')
 plt.title(f'Vergleich der theoretischen und simulierten Dichte (Frame {frame})')
 plt.legend()
 plt.grid(True)
+plt.xlim(0, 2*Radius)
 plt.show()
