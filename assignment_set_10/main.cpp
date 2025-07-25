@@ -177,7 +177,7 @@ int main() {
     saveParticleData(0.0, "particle_data_t0.dat");
     
     int step = 0;
-    double save_interval = t_end / 100.0; // Save 100 snapshots during simulation
+    double save_interval = t_end / 300.0; // Save 300 snapshots during simulation
     int save_every = static_cast<int>(save_interval / dt);
     
     for(double t = 0.0; t < t_end; t += dt) {
